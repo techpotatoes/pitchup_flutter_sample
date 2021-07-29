@@ -1,5 +1,5 @@
 name: pitchupfluttersample
-description: Sample on how to use the pitchUp flutter library
+description: Sample on how to implement a guitar tuning app in Flutter
 
 publish_to: 'none'
 
