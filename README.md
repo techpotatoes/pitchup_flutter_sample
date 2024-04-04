@@ -9,37 +9,7 @@ The libraries used are:
 
 ## Usage
 
-```dart
-
-audioSample = .... //See main.dart if you want to learn how to capture audio.
-
-//Step 1
-//Create a new pitch detector and set the sample rate and buffer size  
-final pitchDetectorDart = PitchDetector(44100, 2000);
-
-//Step 2
-//Call the get pitch method passing as a parameter the audio sample (List<double>) to detect a pitch 
-final result = pitchDetectorDart.getPitch(audioSample);
-
-if (result.pitched) { //There is a pitch of some sort 
-
-    //Step 3
-    //Create a PitchHandler and choose the instrument type
-    final pitchUp = PitchHandler(InstrumentType.guitar);
-
-    //Step 4
-    //Uses the pitchUp library to check if a a given pitch consists of a guitar note and if it's tuned 
-    final handledPitchResult = pitchUp.handlePitch(pitch);
-
-    //Step 5 
-    //Change the UI accordingly to the tuning status
-    setState(() {
-        note = handledPitchResult.note;
-        status = handledPitchResult.tuningStatus.toString();
-        ...
-    })
-}
-```
+Check the code on how to use it with Bloc/Cubit.
 
 ## Contributing
 
