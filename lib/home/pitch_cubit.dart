@@ -1,49 +1,71 @@
+import 'dart:typed_data';
+
+import 'package:buffered_list_stream/buffered_list_stream.dart';
 import 'package:flutter/foundation.dart';
-import 'package:flutter_audio_capture/flutter_audio_capture.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:pitch_detector_dart/pitch_detector.dart';
 import 'package:pitchupdart/pitch_handler.dart';
+import 'package:pitchupdart/tuning_status.dart';
 import 'package:pitchupfluttersample/home/tunning_state.dart';
+import 'package:record/record.dart';
 
 class PitchCubit extends Cubit<TunningState> {
-  final FlutterAudioCapture _audioRecorder;
+
+  final AudioRecorder _audioRecorder;
   final PitchDetector _pitchDetectorDart;
   final PitchHandler _pitchupDart;
 
   PitchCubit(this._audioRecorder, this._pitchDetectorDart, this._pitchupDart):
-   super(TunningState(note: "", status: "Play something")) {
+   super(TunningState(note: "N/A", status: "Play something")) {
     _init();
   }
 
-  _init() {
-    _audioRecorder.start(_listener, onError,
-        sampleRate: 44100, bufferSize: 3000);
-  }
+  _init() async {
 
-  void stop() {
-    _audioRecorder.stop();
+    final recordStream = await _audioRecorder.startStream(
+      const RecordConfig(
+        encoder: AudioEncoder.pcm16bits,
+        numChannels: 1,
+        bitRate: 128000,
+        sampleRate: PitchDetector.DEFAULT_SAMPLE_RATE,
+      )
+    );
 
-    emit(TunningState(
-      note: "",
-      status: "Not listening - STOPPED",
-    ));
-  }
+    var audioSampleBufferedStream = bufferedListStream(
+      recordStream.map((event) {
+        return event.toList();
+      }),
+      //The library converts a PCM16 to 8bits internally. So we need twice as many bytes
+      PitchDetector.DEFAULT_BUFFER_SIZE * 2,
+      ) ;
 
-  void _listener(dynamic obj) {
-    //Gets the audio sample
-    var buffer = Float64List.fromList(obj.cast<double>());
-    final List<double> audioSample = buffer.toList();
+    await for (var audioSample in audioSampleBufferedStream) {
+      final intBuffer = Uint8List.fromList(audioSample);
 
-    //Uses pitch_detector_dart library to detect a pitch from the audio sample
-    _pitchDetectorDart.getPitch(audioSample).then((detectedPitch) => {
-      if (detectedPitch.pitched) {
-        _pitchupDart.handlePitch(detectedPitch.pitch).then((pitchResult) => {
-          emit(TunningState(
-            note: pitchResult.note,
-            status: pitchResult.tuningStatus.toString(),
-          ))       
-        })
-      }
-    });
+      _pitchDetectorDart.getPitchFromIntBuffer(intBuffer).then((detectedPitch) {
+        if (detectedPitch.pitched) {
+           _pitchupDart.handlePitch(detectedPitch.pitch).then((pitchResult) => {
+            
+            emit(TunningState(
+              note: pitchResult.note,
+              status: pitchResult.tuningStatus.getDescription(),
+            ))       
+          });
+        }
+      });      
+    }    
   }
 }
+
+extension Description on TuningStatus {
+  
+  String getDescription() =>
+    switch(this) {
+      TuningStatus.tuned => "Tuned",
+      TuningStatus.toolow => "Too low. Tighten the string",
+      TuningStatus.toohigh => "Too hig. Give it some slack",
+      TuningStatus.waytoolow => "Way too low. Tighten the string",
+      TuningStatus.waytoohigh => "Way to high. Give it some slack",
+      TuningStatus.undefined => "Note is not in the valid interval.",
+    };
+  }

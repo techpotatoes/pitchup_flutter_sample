@@ -1,6 +1,6 @@
 ## PitchUp Flutter Sample - Guitar tuning app
 
-This app is a sample Flutter Guitar tuning app which demonstrates how to use 2 different dart libraries to implement a guitar tuning app. It also uses a library called flutter_audio_capture to capture an audio sample. 
+This app is a sample Flutter Guitar tuning app which demonstrates how to use 2 different dart libraries to implement a guitar tuning app. It also uses a library called record to capture an audio sample. All the libraries are available in most platforms, so this example should cover most use cases. 
 
 The libraries used are: 
 

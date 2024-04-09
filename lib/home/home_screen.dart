@@ -8,47 +8,32 @@ class HomeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final pitchCubitState = context.watch<PitchCubit>().state;
-    final pitchCubit = context.read<PitchCubit>();
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Pitchup sample"),
+        title: const Text("Pitchup sample- Guitar tuner"),
       ),
       body: Center(
-        child: Column(children: [
-          Center(
-              child: Text(
-            pitchCubitState.note,
-            style: const TextStyle(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          mainAxisAlignment: MainAxisAlignment.center,
+          mainAxisSize: MainAxisSize.max,
+          children: [
+            Text(
+              pitchCubitState.note,
+              style: const TextStyle(
+                  color: Colors.black87,
+                  fontSize: 65.0,
+                  fontWeight: FontWeight.bold
+              ),
+            ),
+            Text(
+             pitchCubitState.status,
+              style: const TextStyle(
                 color: Colors.black87,
-                fontSize: 25.0,
-                fontWeight: FontWeight.bold),
-          )),
-          const Spacer(),
-          Center(
-              child: Text(
-            pitchCubitState.status,
-            style: const TextStyle(
-                color: Colors.black87,
-                fontSize: 14.0,
-                fontWeight: FontWeight.bold),
-          )),
-          Expanded(
-            child: Row(
-              children: [
-                Expanded(
-                  child: Center(
-                    child: FloatingActionButton(
-                        onPressed: () {
-                          pitchCubit.stop();
-                        },
-                        child: const Text("Stop")
-                    )
-                  )
-                ),
-              ],
-            )
-          )
+                fontSize: 18.0,
+              ),
+            ),
         ]),
       ),
     );
